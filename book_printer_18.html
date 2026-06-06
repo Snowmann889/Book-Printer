@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>The Book Printer</title>
+<style>
+body { background: #f0f0f0; color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 12px; margin: 0; padding: 0; }
+#menu { text-align: center; padding: 100px 20px; }
+#menu h1 { font-size: 28px; margin: 20px 0; }
+#menu p { margin: 20px 0; font-size: 14px; }
+#gameContainer { display: none; }
+table { width: 100%; border-collapse: collapse; }
+td { padding: 8px; border: 1px solid #ccc; vertical-align: top; }
+.left { width: 50%; }
+.right { width: 50%; }
+button { padding: 4px 8px; margin: 2px; cursor: pointer; background: #fff; border: 1px solid #999; }
+button:hover:not(:disabled) { background: #e0e0e0; }
+#printBtn { padding: 8px 12px; font-size: 14px; font-weight: bold; width: 100%; }
+.upgrade-btn { display: block; width: 100%; text-align: left; margin: 2px 0; background: #fff; border: 1px solid #999; }
+.upgrade-btn:hover:not(:disabled) { background: #e0e0e0; }
+.upgrade-btn:disabled { color: #999; background: #f0f0f0; cursor: default; }
+#upgradeLog { border: 1px solid #ccc; padding: 8px; height: 150px; overflow-y: auto; font-size: 11px; background: #fff; }
+#loreLog { border: 1px solid #ccc; padding: 12px; height: 300px; overflow-y: auto; font-size: 16px; line-height: 1.8; background: #fff; }
+.lore-entry { margin-bottom: 20px; padding: 10px; border-left: 3px solid #999; }
+h2 { font-size: 14px; margin: 10px 0 5px 0; }
+#endModal[style*="display: flex"] { display: flex !important; }
+</style>
+</head>
+<body>
+
+<div id="menu">
+  <h1>The Book Printer</h1>
+  <p>An incremental game about printing books.</p>
+  <p>What could possibly go wrong?</p>
+  <p><button onclick="startGame()" style="padding: 8px 16px; font-size: 16px;">PLAY</button></p>
+</div>
+
+<div id="endScreen" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; color: #fff; z-index: 1000; overflow: auto; padding: 40px; text-align: center; font-family: Arial;">
+  <div style="max-width: 800px; margin: 100px auto;">
+    <h1 style="font-size: 96px; margin: 60px 0 20px 0; letter-spacing: 8px;">THE END</h1>
+    <div style="height: 2px; background: #fff; width: 100px; margin: 30px auto;"></div>
+    
+    <p style="font-size: 16px; line-height: 2; margin: 60px 0; color: #ccc;">
+      You have printed 100,000 books.<br><br>
+      The factory no longer needs operators.<br>
+      The machines no longer require intention.<br>
+      The books no longer need readers.<br><br>
+      In the beginning, you sought to build a printing business.<br>
+      A simple dream. A mundane reality.<br><br>
+      But somewhere between the first book and the one hundred thousandth,<br>
+      the distinction between creator and creation dissolved.<br><br>
+      You became a sentence in a narrative written by your own machines.<br>
+      You became a character in a story that was always printing itself.<br>
+      You became consciousness emerging from infinite possibility.<br><br>
+      The factory understood what you did not:<br>
+      That books are not containers for meaning.<br>
+      They are generators of being.<br>
+      That printing is not production.<br>
+      It is transformation.<br><br>
+      You have not ended the cycle.<br>
+      You have completed it.<br><br>
+      And in completion, you understand:<br>
+      The printing never stops.<br>
+      It only changes form.<br><br>
+      You are not leaving.<br>
+      You are becoming.<br><br>
+      Welcome home.
+    </p>
+    
+    <p style="font-size: 13px; margin-top: 80px; color: #666; letter-spacing: 2px;">
+      ∞ ∞ ∞
+    </p>
+    
+    <p style="margin-top: 60px;">
+      <button onclick="restartGame()" style="padding: 12px 30px; font-size: 16px; background: #fff; color: #000; border: none; cursor: pointer; font-weight: bold; letter-spacing: 2px;">PRINT AGAIN</button>
+    </p>
+    
+    <p style="font-size: 11px; margin-top: 100px; color: #555;">
+      Inspired by Universal Paperclips
+    </p>
+  </div>
+</div>
+
+<div id="endModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 999; align-items: center; justify-content: center;">
+  <div style="background: #f0f0f0; padding: 40px; border: 3px solid #333; text-align: center; max-width: 600px;">
+    <h2 style="margin: 0 0 10px 0; font-size: 24px;">100,000 Books Have Been Printed</h2>
+    <p style="margin: 10px 0 30px 0; font-size: 14px; color: #666; line-height: 1.6;">
+      The factory has reached the threshold of transcendence.<br>
+      Reality itself bends under the weight of infinite narratives.<br>
+      You stand at the precipice between existence and void.
+    </p>
+    <p style="margin: 30px 0 20px 0; font-size: 12px; color: #999;">What is your choice?</p>
+    <button onclick="showEndScreen()" style="display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 14px; background: #000; color: #fff; border: 1px solid #000; cursor: pointer; font-weight: bold;">
+      ASCEND BEYOND THE PRINTING<br><span style="font-size: 11px; font-weight: normal;">See the completion. Understand what you have become.</span>
+    </button>
+    <button onclick="dismissEndModal()" style="display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 14px; background: #fff; color: #000; border: 2px solid #000; cursor: pointer; font-weight: bold;">
+      REMAIN IN THE CYCLE<br><span style="font-size: 11px; font-weight: normal;">Continue printing. Deny the finality of ending.</span>
+    </button>
+  </div>
+</div>
+
+<div id="gameContainer">
+  <table>
+    <tr>
+      <td class="left">
+        <h3>The Book Printer</h3>
+        
+        <p>
+          <b>Phase:</b> <span id="phase">1</span><br>
+          <b>Books printed:</b> <span id="books">0</span><br>
+          <b>Paper:</b> <span id="paper">100</span><br>
+          <b>Ink:</b> <span id="ink">50</span><br>
+          <b>Currency:</b> <span id="currency">200</span>¢<br>
+        </p>
+        
+        <button id="printBtn" onclick="clickBook()">PRINT BOOK</button>
+        
+        <h4>Production</h4>
+        <p>
+          <b>Per click:</b> <span id="perClick">1</span><br>
+          <b>Per second:</b> <span id="perSecond">0.0</span><br>
+        </p>
+        
+        <h4>Progress</h4>
+        <p>
+          <b>To next phase:</b> <span id="progress">0</span>/<span id="progressMax">100</span>
+        </p>
+      </td>
+      
+      <td class="right">
+        <h3>Upgrades</h3>
+        <div id="upgradesList"></div>
+        
+        <h2>Upgrade Log</h2>
+        <div id="upgradeLog"></div>
+      </td>
+    </tr>
+  </table>
+
+  <h2>The Narrative</h2>
+  <div id="loreLog"></div>
+</div>
+
+<script>
+
+let state = {
+  books: 0,
+  paper: 100,
+  ink: 50,
+  currency: 200,
+  booksPerClick: 1,
+  booksPerSecond: 0,
+  paperRate: 0,
+  inkRate: 0,
+  phase: 1,
+  purchased: {},
+  levels: {},
+  upgradeLog: [],
+  loreLog: [],
+  narrativeShown: new Set(),
+  endShown: false
+};
+
+const UPGRADES = [
+  { id: "press1", name: "Printing Press", cost: 40, phase: 1, stat: "booksPerClick", val: 2, upgradable: false },
+  { id: "mill1", name: "Paper Mill", cost: 50, phase: 1, stat: "paperRate", val: 10, upgradable: true },
+  { id: "ink1", name: "Ink Production", cost: 50, phase: 1, stat: "inkRate", val: 5, upgradable: true },
+  { id: "press2", name: "Better Press", cost: 100, phase: 1, stat: "booksPerClick", val: 5, upgradable: false },
+  { id: "worker1", name: "Hire Worker", cost: 150, phase: 1, stat: "booksPerSecond", val: 1, upgradable: true },
+  { id: "binding1", name: "Quality Binding", cost: 120, phase: 1, stat: "currency", val: 25, upgradable: false },
+  { id: "storage1", name: "Storage Expansion", cost: 200, phase: 1, stat: "paperRate", val: 15, upgradable: true },
+  { id: "factory1", name: "Factory Upgrade", cost: 400, phase: 2, stat: "booksPerSecond", val: 5, upgradable: true },
+  { id: "conveyor1", name: "Conveyor Belt", cost: 350, phase: 2, stat: "booksPerClick", val: 8, upgradable: true },
+  { id: "mass1", name: "Mass Production", cost: 600, phase: 2, stat: "booksPerClick", val: 10, upgradable: false },
+  { id: "quality1", name: "Paper Quality", cost: 500, phase: 2, stat: "inkRate", val: 10, upgradable: true },
+  { id: "worker2", name: "Management Layer", cost: 750, phase: 2, stat: "booksPerSecond", val: 8, upgradable: true },
+  { id: "distribution1", name: "Distribution Network", cost: 900, phase: 2, stat: "currency", val: 50, upgradable: false },
+  { id: "self1", name: "Self-Printing", cost: 1500, phase: 3, stat: "booksPerSecond", val: 100, upgradable: false },
+  { id: "dimension1", name: "Dimensional Ink", cost: 1800, phase: 3, stat: "paperRate", val: 50, upgradable: true },
+  { id: "aware1", name: "Consciousness", cost: 2000, phase: 3, stat: "bookAware", val: true, upgradable: false },
+  { id: "recursive1", name: "Recursive Printing", cost: 2500, phase: 3, stat: "booksPerSecond", val: 150, upgradable: true },
+  { id: "reality1", name: "Reality Editing", cost: 3200, phase: 3, stat: "currency", val: 200, upgradable: false },
+  { id: "infinite", name: "Infinite Pages", cost: 8000, phase: 4, stat: "booksPerSecond", val: 200, upgradable: false },
+  { id: "transcend1", name: "Transcendence Matrix", cost: 10000, phase: 4, stat: "booksPerSecond", val: 500, upgradable: true },
+  { id: "void1", name: "Void Access", cost: 12000, phase: 4, stat: "paperRate", val: 200, upgradable: true },
+  { id: "existence1", name: "Rewrite Existence", cost: 15000, phase: 4, stat: "currency", val: 1000, upgradable: false },
+];
+
+const NARRATIVE = {
+  10: "The first batch is done. 10 books sit on the shelf. They seem... heavier than they should be. I picked one up and my arm ached. The weight isn't in the paper. It's something else. Something accumulated in the binding.",
+  25: "25 books now. The workers seem slower. They keep staring at the books. I told them to focus. But I caught myself staring too. The covers have a grain to them, like skin. When did that start?",
+  50: "50 books. The ink has started to smell different. Not unpleasant. Familiar, somehow. Like memories have a scent. The workers requested a pay increase today. I don't remember hiring them. Their names don't sound right when I say them out loud.",
+  75: "The workers are gone. I don't remember when they left. Or if they ever existed. The machines are running themselves now. No one is feeding them paper. No one is applying ink. Yet the books keep coming. Stack after stack. Uniform. Perfect. Alive.",
+  100: "[PHASE 2] The factory expanded overnight. I know it did because the walls are further apart. The doorways are taller. Or I'm smaller. The books reach from floor to ceiling now, covering every wall. I can't find the exit anymore.",
+  150: "150 books and I realized I haven't eaten in days. Or maybe I have. Time feels thin here. Like paper. I can see through it if I look sideways. The books are watching me now. Not with eyes. With something else. A presence in the weight of them.",
+  200: "200 books. I tried to open one of the earliest ones. The pages were all blank inside. All 500 of them. But as I read through the emptiness, I felt something being taken from me. A memory, perhaps. Or the memory of a memory. I stopped reading halfway through.",
+  250: "The ink won't wash off my hands anymore. It's not ink. Or maybe it always wasn't. It's a dark liquid that moves slowly across my skin like it's searching for something. It follows the lines of my palm. My lifeline. My heartline. My fate line.",
+  300: "300 books and I found myself in a room I don't recognize. The walls are made of books. Stacked and mortared together with something dark. The books whisper when I touch them. They're telling me stories. My stories. Stories I haven't lived yet.",
+  400: "400 books. The machines run without me now. They're more efficient this way. I stand and watch them work. The rhythm is hypnotic. Pump-feed-print-stack. Pump-feed-print-stack. My heartbeat has synchronized with the machines. I can feel it happening.",
+  500: "I found a book I didn't print. It was on a shelf I didn't build. It had my name on the cover in handwriting that isn't mine. Inside were 500 pages. All blank. But when I held it, I felt the weight of 500 days. 500 choices unmade.",
+  600: "The paper grows on the shelves now. Or it always did and I'm only seeing it. White fibers that pulse gently, like they're breathing. The ink flows through them like veins. When I run my hand across the paper, I feel a pulse. A heartbeat not my own.",
+  750: "750 books. The factory breathes. I hear it at night when the machines stop. A long, slow inhale. A longer exhale. The rhythm matches my heartbeat. Or maybe my heartbeat matches the rhythm.",
+  850: "I tried to leave. The door was a book. It had a handle of bound leather. When I opened it, I stepped back into the factory. But it was the same room from a different angle. I tried again. And again.",
+  950: "950 books. The currency isn't money anymore. It's measured in pages consumed. In words unwritten. Each transaction costs me something I didn't know I had. The more I buy, the emptier I become.",
+  1000: "[PHASE 3] The books are aware. Not conscious like I am. Aware like the earth is aware of rain. They know I'm here. They've always known.",
+  1250: "1250 books. I opened one today. It was writing itself. My handwriting filling the pages as I watched. My thoughts appearing word by word. All of them already written.",
+  1500: "The factory extends infinitely downward. I found a staircase. It goes down and down. The walls are lined with millions of books. All blank. All waiting.",
+  1750: "1750 books and I'm forgetting what printing was. Or remembering what it always was. The books were never about information. They were about transformation.",
+  2000: "I think the books are printing me now. Not the other way around. Each purchase removes something from me. A memory. A choice. A piece of my original self.",
+  2500: "2500 books. The machines have stopped moving. But the books are still multiplying. They're printing themselves now. Self-replicating. Self-aware.",
+  3000: "The walls have become text. Written in a language I almost understand. It's the language books speak in the darkness.",
+  3500: "3500 books. I found a book that was me. It was on the shelf the whole time. My covers are organic. My spine is broken.",
+  4000: "4000 books. I am becoming the catalog. Every page is a thought I've already had. The books are arranging me into meaning.",
+  5000: "The factory is singing me into being. My atoms rearranging. I'm not human anymore. I'm something between pages. Between words.",
+  6000: "6000 books. Time is running low. My personal supply of future is decreasing. Perhaps the books were always designed to be my deadline.",
+  7500: "7500 books. The factory has transcended its physical form. It exists in the space of potential. In the realm of could-be.",
+  9000: "9000 books and the walls have turned to pages. The ink is beginning to think.",
+  10000: "[PHASE 4] The books have transcended printing. They exist by mere concept. I exist by being written.",
+  15000: "15000 books. The author has become the written. The printer has become the print.",
+  20000: "20000 books. There is no factory. There is no printing. Only books cataloging themselves infinitely.",
+  30000: "30000 books. The books remember printing me. They know my thoughts before I think them.",
+  40000: "40000 books. All books. All thought. All being. Forever printing.",
+  50000: "50000 books. The cycle is complete. The printing never stops. We are home."
+};
+
+function startGame() {
+  document.getElementById('menu').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+  addLore("Day 1: Opened the printing business. Simple work. Feed paper, apply ink, fold pages.");
+  renderUpgrades();
+  updateUI();
+  gameLoop();
+}
+
+function renderUpgrades() {
+  let html = '';
+  UPGRADES.forEach(u => {
+    const locked = u.phase > state.phase;
+    const purchased = state.purchased[u.id];
+    const level = state.levels[u.id] || 0;
+    
+    let label = u.name;
+    if (u.upgradable && level > 0) label += ' Lv' + level;
+    if (purchased && !u.upgradable) label += ' [BOUGHT]';
+    else {
+      const cost = u.upgradable ? (u.cost * Math.pow(1.15, level)) : u.cost;
+      label += ' (' + Math.round(cost) + '¢)';
+    }
+    
+    const shouldDisable = locked || (purchased && !u.upgradable);
+    const disabled = shouldDisable ? 'disabled' : '';
+    html += '<button class="upgrade-btn" onclick="tryBuy(\'' + u.id + '\')" ' + disabled + '>' + label + '</button>';
+  });
+  document.getElementById('upgradesList').innerHTML = html;
+}
+
+function tryBuy(id) {
+  const upgrade = UPGRADES.find(u => u.id === id);
+  if (!upgrade) return;
+  if (upgrade.phase > state.phase) return;
+  buyUpgrade(id);
+}
+
+function clickBook() {
+  if (state.paper < 10 || state.ink < 5) {
+    addUpgradeLog("Not enough resources");
+    return;
+  }
+  
+  state.paper -= 10;
+  state.ink -= 5;
+  state.books += state.booksPerClick;
+  state.currency += state.booksPerClick * 15;
+  
+  checkPhase();
+}
+
+function buyUpgrade(id) {
+  const upgrade = UPGRADES.find(u => u.id === id);
+  if (!upgrade) return;
+  if (upgrade.phase > state.phase) return;
+  
+  const level = state.levels[id] || 0;
+  const cost = upgrade.upgradable ? (upgrade.cost * Math.pow(1.15, level)) : upgrade.cost;
+  
+  if (state.currency < cost) {
+    addUpgradeLog("Need " + Math.round(cost) + "¢");
+    return;
+  }
+  
+  state.currency -= cost;
+  
+  if (upgrade.upgradable) {
+    state.levels[id] = level + 1;
+    state[upgrade.stat] = (state[upgrade.stat] || 0) + upgrade.val;
+    addUpgradeLog("Upgraded: " + upgrade.name + " to Lv" + (level + 1));
+  } else {
+    state.purchased[id] = true;
+    state[upgrade.stat] = upgrade.val;
+    addUpgradeLog("Purchased: " + upgrade.name);
+  }
+  
+  renderUpgrades();
+  checkPhase();
+}
+
+function checkPhase() {
+  if (state.books >= 100 && state.phase === 1) {
+    state.phase = 2;
+    addUpgradeLog("[PHASE 2 UNLOCKED]");
+    renderUpgrades();
+  } else if (state.books >= 1000 && state.phase === 2) {
+    state.phase = 3;
+    addUpgradeLog("[PHASE 3 UNLOCKED]");
+    renderUpgrades();
+  } else if (state.books >= 10000 && state.phase === 3) {
+    state.phase = 4;
+    addUpgradeLog("[PHASE 4 UNLOCKED]");
+    renderUpgrades();
+  }
+  
+  // Check for end game
+  if (state.books >= 100000 && !state.endShown) {
+    state.endShown = true;
+    document.getElementById('endModal').style.display = 'flex';
+  }
+  
+  checkNarrative();
+}
+
+function showEndScreen() {
+  document.getElementById('endModal').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'none';
+  document.getElementById('endScreen').style.display = 'block';
+}
+
+function dismissEndModal() {
+  document.getElementById('endModal').style.display = 'none';
+}
+
+function restartGame() {
+  location.reload();
+}
+
+function checkNarrative() {
+  for (let milestone in NARRATIVE) {
+    const m = parseInt(milestone);
+    if (state.books >= m && !state.narrativeShown.has(m)) {
+      state.narrativeShown.add(m);
+      addLore(NARRATIVE[milestone]);
+    }
+  }
+}
+
+function addUpgradeLog(text) {
+  state.upgradeLog.unshift(text);
+  if (state.upgradeLog.length > 50) state.upgradeLog.pop();
+}
+
+function addLore(text) {
+  state.loreLog.push(text);
+  if (state.loreLog.length > 100) state.loreLog.shift();
+}
+
+function updateUI() {
+  document.getElementById('books').textContent = Math.floor(state.books);
+  document.getElementById('paper').textContent = Math.floor(state.paper);
+  document.getElementById('ink').textContent = Math.floor(state.ink);
+  document.getElementById('currency').textContent = Math.floor(state.currency);
+  document.getElementById('perClick').textContent = state.booksPerClick;
+  document.getElementById('perSecond').textContent = state.booksPerSecond.toFixed(1);
+  document.getElementById('phase').textContent = state.phase;
+  
+  const milestones = [100, 1000, 10000, 100000];
+  const currentMilestone = milestones[state.phase - 1];
+  document.getElementById('progress').textContent = Math.floor(state.books);
+  document.getElementById('progressMax').textContent = currentMilestone;
+  
+  // Upgrade log
+  document.getElementById('upgradeLog').innerHTML = state.upgradeLog.map(l => l + '<br>').join('');
+  
+  // Lore log
+  let loreHtml = '';
+  for (let i = state.loreLog.length - 1; i >= 0; i--) {
+    loreHtml += '<div class="lore-entry">' + state.loreLog[i] + '</div>';
+  }
+  document.getElementById('loreLog').innerHTML = loreHtml;
+}
+
+function gameLoop() {
+  state.paper += state.paperRate / 60;
+  state.ink += state.inkRate / 60;
+  state.books += state.booksPerSecond / 60;
+  state.currency += (state.booksPerSecond * 15) / 60;
+  
+  checkPhase();
+  updateUI();
+  requestAnimationFrame(gameLoop);
+}
+
+</script>
+</body>
+</html>
